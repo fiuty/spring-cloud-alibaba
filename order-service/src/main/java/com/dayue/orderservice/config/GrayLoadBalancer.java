@@ -1,5 +1,6 @@
 package com.dayue.orderservice.config;
 
+import com.dayue.orderservice.constants.GrayConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -9,10 +10,7 @@ import org.springframework.cloud.loadbalancer.core.*;
 import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -20,17 +18,17 @@ import java.util.stream.Collectors;
  * @author zhengdayue
  * @time 2022/7/25 0:15
  */
-public class GrayConfiguration implements ReactorServiceInstanceLoadBalancer {
-    private static final Log log = LogFactory.getLog(GrayConfiguration.class);
+public class GrayLoadBalancer implements ReactorServiceInstanceLoadBalancer {
+    private static final Log log = LogFactory.getLog(GrayLoadBalancer.class);
     final AtomicInteger position;
     final String serviceId;
     ObjectProvider<ServiceInstanceListSupplier> serviceInstanceListSupplierProvider;
 
-    public GrayConfiguration(ObjectProvider<ServiceInstanceListSupplier> serviceInstanceListSupplierProvider, String serviceId) {
+    public GrayLoadBalancer(ObjectProvider<ServiceInstanceListSupplier> serviceInstanceListSupplierProvider, String serviceId) {
         this(serviceInstanceListSupplierProvider, serviceId, (new Random()).nextInt(1000));
     }
 
-    public GrayConfiguration(ObjectProvider<ServiceInstanceListSupplier> serviceInstanceListSupplierProvider, String serviceId, int seedPosition) {
+    public GrayLoadBalancer(ObjectProvider<ServiceInstanceListSupplier> serviceInstanceListSupplierProvider, String serviceId, int seedPosition) {
         this.serviceId = serviceId;
         this.serviceInstanceListSupplierProvider = serviceInstanceListSupplierProvider;
         this.position = new AtomicInteger(seedPosition);
@@ -62,16 +60,21 @@ public class GrayConfiguration implements ReactorServiceInstanceLoadBalancer {
             }
             return new EmptyResponse();
         } else {
+            List<ServiceInstance> newInstances = new ArrayList<>(0);
             // 过滤出version-id的版本出来
             if (versionIds != null && versionIds.size() != 0) {
-                instances = instances.stream().filter(item -> {
+                newInstances = instances.stream().filter(item -> {
                     Map<String, String> metadata = item.getMetadata();
-                    String value = metadata.get("version-id");
+                    String value = metadata.get(GrayConstants.VERSION_ID);
                     return Objects.equals(value, versionIds.get(0));
                 }).collect(Collectors.toList());
             }
+            // 防止过滤完无实例可负载均衡，如为空，则用原先的实例列表进行负载均衡
+            if (newInstances.isEmpty()) {
+                newInstances = instances;
+            }
             int pos = Math.abs(this.position.incrementAndGet());
-            ServiceInstance instance = instances.get(pos % instances.size());
+            ServiceInstance instance = newInstances.get(pos % instances.size());
             return new DefaultResponse(instance);
         }
     }

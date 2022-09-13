@@ -16,5 +16,5 @@ spring:
           version-id: v1
 logging:
   level:
-    com.alibaba.nacos: info
+    com.alibaba.nacos: debug
     org.springframework: info

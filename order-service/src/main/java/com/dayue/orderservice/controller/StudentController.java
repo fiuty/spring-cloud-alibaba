@@ -32,4 +32,9 @@ public class StudentController {
     public void test2() {
         studentService.test2();
     }
+
+    @GetMapping("/test3")
+    public String test3() {
+        return "test3";
+    }
 }

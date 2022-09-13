@@ -1,4 +1,4 @@
-package com.dayue.orderservice.config;
+package com.dayue.gateway.config;
 
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.loadbalancer.core.ReactorLoadBalancer;
@@ -9,7 +9,7 @@ import org.springframework.core.env.Environment;
 
 /**
  * @author zhengdayue
- * @time 2022/7/28 21:00
+ * @time 2022/9/12 21:40
  */
 public class NacosSameClusterConfiguration {
 

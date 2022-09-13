@@ -12,6 +12,8 @@
 
     <modules>
         <module>order-service</module>
+        <module>user-service</module>
+        <module>gateway</module>
     </modules>
 
     <properties>

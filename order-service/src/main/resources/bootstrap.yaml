@@ -1,3 +1,5 @@
+server:
+  port: 8082
 spring:
   application:
     name: order-service
@@ -19,5 +21,5 @@ spring:
 logging:
   level:
     com.alibaba.nacos: info
-    org.springframework: debug
-    com.dayue: debug
+    org.springframework: info
+    com.dayue: info
